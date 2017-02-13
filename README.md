@@ -1,5 +1,12 @@
-## Loading this App to build on Digital Ocean
+TO DO 
 
+  gem 'database_cleaner' setup
+  gem 'shoulda-matchers' setup and read
+
+
+## A clone of fut-std to add auth basic with no gems: Ruby slim admin
+
+## How this was built
 **Clone the std app to your desktop as the name of the new application**
 > git clone https://github.com/yoyozi/reponame.git newreponame
 
@@ -12,7 +19,91 @@
 > git add -A
 > git commit -m "Ready" 
 > git push -u origin master
-> git push -u origin master
+
+**Change deploy.rb and production.rb so IP and APPNAME are same as yours**
+**Create application.yml, database.yml and secrets.yml file (Figaro and ENV VARS hidden)**
+# MAKE SURE .gitignore EXCLUDES these files from being added to your repo!!
+
+## Setup the testing environment and GEMS
+
+```
+gem 'faker'
+
+group :development, :test do
+  gem 'rspec-rails'
+  gem 'factory_girl_rails'
+  gem 'capybara'
+  gem 'database_cleaner'
+  gem 'shoulda-matchers'
+end
+```
+
+> bundle
+
+**Setup rpec**
+
+>rails g rspec:install
+
+Edit the rails helper file
+```
+## This file is copied to spec/ when you run 'rails generate rspec:install'
+
+ENV['RAILS_ENV'] ||= 'test'
+require File.expand_path('../../config/environment', __FILE__)
+
+# Prevent database truncation if the environment is production
+abort("The Rails environment is running in production mode!") if Rails.env.production?
+require 'spec_helper'
+require 'rspec/rails'
+require 'capybara/rails'
+require 'shoulda/matchers'
+require 'database_cleaner'
+
+Dir[Rails.root.join('spec/support/**/*.rb')].each { |f| require f }
+
+ActiveRecord::Migration.maintain_test_schema!
+
+RSpec.configure do |config|
+  config.use_transactional_fixtures = false
+
+  # Allows us to call Create without saying FactoryGirl......
+  config.include FactoryGirl::Syntax::Methods
+  # config.include Features, type => feature
+  # config.include Features::SessionHelpers, type: :feature
+
+end
+```
+
+> mkdir ./spec/factories (if doesnt exist)
+
+
+## Basic Auth and how it was built 
+
+Commands used
+
+  rails g controller users new
+  rails g model user email:string:uniq password_hash:string password_salt:string
+  rake db:migrate
+  rails dbconsole
+  rails g controller sessions new
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## To load this app to build on Digital Ocean
 
 ## On remote: Sign up with Digital Ocean or rebuild your existing droplet
 Delete the fingerprints of the known host in the known hosts file on your local machine
