@@ -81,8 +81,14 @@ end
 
 Commands used
 
-  rails g controller users new
-  rails g model user email:string:uniq password_hash:string password_salt:string
+> rails g controller users new
+> rails g model user email:string:uniq password_hash:string password_salt:string
+
+Edit the database.yml file 
+> rake db:create
+> rake db:migrate
+
+
   rake db:migrate
   rails dbconsole
   rails g controller sessions new
