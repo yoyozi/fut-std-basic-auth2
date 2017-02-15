@@ -1,17 +1,14 @@
 Rails.application.routes.draw do
 
- root :to => "pages#index"
+  resources :posts
+  resources :sessions, only: [:new, :create]
 
-  get "log_out" => "sessions#destroy", :as => "log_out"
-  get "log_in" => "sessions#new", :as => "log_in"
+  get 'signup', to: 'users#new', as: 'signup'
+  get 'login', to: 'sessions#new', as: 'login'
+  get 'logout', to: 'sessions#destroy', as: 'logout'
 
-  resources :users, only: [:new, :create]
-  resources :sessions
+  resources :users
 
-  
-
-
- # get "/pages/:page" => "pages#show"
- # root "pages#show", page: "home"
+  root 'pages#index'
 
 end
