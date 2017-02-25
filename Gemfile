@@ -13,11 +13,19 @@ gem 'unicorn'
 gem 'figaro'
 
 group :development, :test do
+  
   gem 'rspec-rails'
+  gem 'ffaker'
   gem 'factory_girl_rails'
   gem 'capybara'
   gem 'database_cleaner'
-  gem 'shoulda-matchers'
+
+
+end
+
+group :test do
+  gem 'shoulda-matchers', require: false
+  gem 'simplecov', '~> 0.12.0', :require => false
 end
 
 group :development do
@@ -35,5 +43,6 @@ group :development do
   gem 'capistrano-rails'
   gem 'capistrano-secrets-yml'
   gem 'capistrano-database-yml'
+  gem 'annotate'
 end
 

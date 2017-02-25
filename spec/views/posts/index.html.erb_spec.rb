@@ -1,25 +1,17 @@
 require 'rails_helper'
 
-RSpec.describe "posts/index", type: :view do
-  before(:each) do
-    assign(:posts, [
-      Post.create!(
-        :user => nil,
-        :title => "Title",
-        :content => "MyText"
-      ),
-      Post.create!(
-        :user => nil,
-        :title => "Title",
-        :content => "MyText"
-      )
-    ])
+RSpec.describe "posts/index" do
+  subject { build(:post) }
+
+  it "renders _post partial for each post" do
+    assign(:posts, [subject, subject])
+    render
+    expect(view).to render_template(partial: '_post', count: 2)
   end
 
-  it "renders a list of posts" do
+  it "displays post's title" do
+    assign(:posts, [subject])
     render
-    assert_select "tr>td", :text => nil.to_s, :count => 2
-    assert_select "tr>td", :text => "Title".to_s, :count => 2
-    assert_select "tr>td", :text => "MyText".to_s, :count => 2
+    expect(rendered).to include(subject.title)
   end
 end

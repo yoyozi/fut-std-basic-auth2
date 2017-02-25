@@ -6,6 +6,10 @@
 /config/database.yml
 /.env
 /config/secrets.yml
+/db/seeds.rb
 
 # Ignore application configuration
 /config/application.yml
+
+#ignore Simple-cov
+/coverage

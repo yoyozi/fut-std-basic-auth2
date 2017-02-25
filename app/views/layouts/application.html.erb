@@ -8,20 +8,19 @@
 </head>
 <body>
 
-<div id="user_header">
+<%= render 'layouts/header' %>
 
-
-<%= link_to 'Home', root_path %> |
-<%= link_to 'Posts', posts_path %> |
-<% if current_user %>
-Logged in as <%= current_user.email %>.
-<%= link_to "Log Out", logout_path %>
-<% else %>
-<%= link_to "Sign Up", signup_path %> or
-<%= link_to "Log In", login_path %>
+<% flash.each do |name, msg| %>
+  <% if msg.is_a?(String) %>
+    <%= content_tag :div, msg, :class => "flash_#{name}" %>
+  <% end %>
 <% end %>
 
 <%= yield %>
+
+<%= render 'layouts/footer' %>
+
+<%= debug(params) if Rails.env.development? %>
 
 </body>
 </html>

@@ -23,6 +23,7 @@ class PostsController < ApplicationController
   end
 
 def create
+  # when logged in the controller links current user to the post as it belongs to a user
   @post = current_user.posts.build(post_params)
   if @post.save
     redirect_to @post, notice: 'Post was successfully created.'
@@ -58,12 +59,12 @@ end
     end
 
 
-  before_action :authorize, except: [:show, :index]
- 
+  # The method to ensure that a user is logged in else cannot use the actions listed in  before action above
   def authorize
     if current_user.nil?
-      redirect_to login_url, alert: "Not authorized! Please log in."
+      redirect_to login_url, alert: "Not authorized! Please log in to post."
     else
+      # If the post is not belonging to the logged in user then redirect to root url and send flash alert.
       if @post && @post.user != current_user
         redirect_to root_path, alert: "Not authorized! Only #{@post.user} has access to this post."
       end

@@ -1,0 +1,11 @@
+<%# NAVBAR %>
+
+<%= link_to 'Home', root_path %> |
+<%= link_to 'Posts', posts_path %> |
+<% if current_user %>
+	Logged in as: <%= link_to "#{current_user}", edit_user_path(current_user.id) %>
+	<%= link_to "Log Out", logout_path %>
+<% else %>
+	<%= link_to "Sign Up", signup_path %> or
+	<%= link_to "Log In", login_path %>
+<% end %>
