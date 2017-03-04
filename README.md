@@ -1,11 +1,23 @@
 ## A clone of fut-std to add auth basic with no gems: Ruby slim admin
+## Authe and Auth with basic and pundit (Pundit rocks)
+
+**Rails 4.2.5 Ruby 2.3.1 (Like to up to Rails 5.0.1)**
+
+## What I am aming for 
+Three roles split by enum
+auser puser and nuser (Admin user - Power user - normal user)
+
+1. admin user can do all
+2. all can edit own profile
+3. puser can edit other profile but not change roles
+4. puser can list users
 
 ## How this was built
 **Clone the std app to your desktop as the name of the new application**
 > git clone https://github.com/yoyozi/reponame.git newreponame
 
 **Create newreponame on github**
-**Set the remote to created**
+**Set the remote to freshly created repo**
 
 > git remote set-url origin https://github.com/yoyozi/newreponame.git
 
@@ -385,30 +397,58 @@ end
 
 Edit the rails helper file
 ```
+#require 'simplecov'
+#SimpleCov.start
+
 ## This file is copied to spec/ when you run 'rails generate rspec:install'
 
 ENV['RAILS_ENV'] ||= 'test'
+
 require File.expand_path('../../config/environment', __FILE__)
 
 # Prevent database truncation if the environment is production
 abort("The Rails environment is running in production mode!") if Rails.env.production?
+
+
 require 'spec_helper'
 require 'rspec/rails'
+require 'ffaker'
+require 'capybara/rspec'
 require 'capybara/rails'
 require 'shoulda/matchers'
 require 'database_cleaner'
+require "pundit/rspec"
+
 
 Dir[Rails.root.join('spec/support/**/*.rb')].each { |f| require f }
 
+
 ActiveRecord::Migration.maintain_test_schema!
 
-RSpec.configure do |config|
-  config.use_transactional_fixtures = false
+Shoulda::Matchers.configure do |config|
+  config.integrate do |with|
+    with.test_framework :rspec
+    with.library :rails
+  end
+ end
 
+
+
+RSpec.configure do |config|
+  
   # Allows us to call Create without saying FactoryGirl......
   config.include FactoryGirl::Syntax::Methods
+  config.use_transactional_fixtures = false
+  config.include(Shoulda::Matchers::ActiveModel, type: :model)
+  config.include(Shoulda::Matchers::ActiveRecord, type: :model)
+
+
   # config.include Features, type => feature
+  config.include Capybara::DSL
   # config.include Features::SessionHelpers, type: :feature
+
+  # Dont have to specify the type ie model in the test as it gets infered
+  config.infer_spec_type_from_file_location!
 
 end
 ```
@@ -602,46 +642,337 @@ These tests fails
 > rake db:test:prepare
 
 Tests pass
+After adding roles with bolean and then with enum I have written some tests that all pass however the issue with three user roles not being granular enough sucks so I am going to namespace and use both enum and boolean
+
+These are the tests that pass (Features): problem is that puser (power user can edit admins profile Dow!)
+
+```
+require 'rails_helper'
+
+describe "Authorization:" do
+
+    # Not logged in can see landing but not indexes posts and users
+    # /
+
+    describe "NOT logged in" do
+
+        it 'can see landing page' do 
+        visit root_url
+                expect(page).to have_content 'Log In'
+    
+        end
+
+    end
+
+    # Posts
+
+    describe "NOT logged in" do
+
+        it 'cannot see posts index' do 
+        visit posts_path
+                expect(page).to have_content 'Log in required.'
+    
+        end
+
+    end
+
+    # Users
+
+    describe "NOT logged in" do
+
+        it 'cannot see users index' do 
+        visit users_path
+                expect(page).to have_content 'Log in required.'
+    
+        end
+
+    end
+
+    # Logged in 
+    # Admin and pusers can see users index but not nusers
+    # Users
+
+
+    describe "ONLY Admin users logged in" do
+
+        it 'can see Users index (Users)' do 
+            user = create(:user, role: "admin")
+            log_in(user)
+            expect(page).to have_content 'Logged in!'
+            visit users_path
+            expect(page).to have_content 'Listing Users'
+
+        end
+
+    end
+
+    describe "Pusers logged in" do
+
+        it 'can see users index' do 
+            user = create(:user, role: "puser")
+            log_in(user)
+            expect(page).to have_content 'Logged in!'
+            visit users_path
+            expect(page).to have_content 'Listing Users'
+
+        end
+
+    end
+
+    describe "Nusers logged in" do
+
+        it 'cannot see users index' do 
+            user = create(:user, role: "nuser")
+            log_in(user)
+            expect(page).to have_content 'Logged in!'
+            visit users_path
+            expect(page).to have_content 'Access denied.'
+
+        end
+
+    end
+
+    # Logged in 
+    # All can see own profile
+
+    describe "Admin users logged in" do
+
+        it 'can see and edit there own profile' do 
+            user = create(:user, role: "admin")
+            log_in(user)
+            expect(page).to have_content 'Logged in!'
+            click_on user
+            expect(page).to have_content 'Profile page'
+            click_on "Edit"
+            expect(page).to have_content 'Editing User'
+
+
+        end
+
+    end
+
+    describe "Pusers logged in" do
+
+        it 'can see and edit there own profile' do  
+            user = create(:user, role: "puser")
+            log_in(user)
+            expect(page).to have_content 'Logged in!'
+            click_on user
+            expect(page).to have_content 'Profile page'
+            click_on "Edit"
+            expect(page).to have_content 'Editing User'
+
+        end
+
+    end
+
+    describe "Nusers logged in" do
+
+        it 'can see and edit there own profile' do  
+            user = create(:user, role: "nuser")
+            log_in(user)
+            expect(page).to have_content 'Logged in!'
+            click_on user
+            expect(page).to have_content 'Profile page'
+            click_on "Edit"
+            expect(page).to have_content 'Editing User'
+
+        end
+
+    end
+
+
+    # Logged in 
+    # Admin can edit all profiles rest cannot edit other profiles
+
+    describe "Admin users logged in" do
+
+        it 'can edit all others profile' do 
+            user = create(:user, role: "admin")
+            other_user = create(:user, role: "admin")
+            log_in(user)
+            expect(page).to have_content 'Logged in!'
+            visit edit_user_path(other_user)
+            expect(page).to have_content 'Editing User'
+
+        end
+
+    end
+
+    describe "Pusers logged in" do
+
+        it 'can edit other profile'      do 
+            user = create(:user, role: "puser")
+            other_user = create(:user)
+            log_in(user)
+            expect(page).to have_content 'Logged in!'
+            visit edit_user_path(other_user)
+            expect(page).to have_content 'Editing User'
+
+        end
+
+    end
+
+    describe "Nusers logged in" do
+
+        it 'cannot edit other profile'      do 
+            user = create(:user, role: "nuser")
+            other_user = create(:user)
+            log_in(user)
+            expect(page).to have_content 'Logged in!'
+            visit edit_user_path(other_user)
+            expect(page).to have_content 'Access denied.'
+
+        end
+
+    end
+
+    # Logged in 
+    # Admin user can create an account only in adminrole Controller
+    # Puser cannot and normal user cannot
+
+    describe "Admin can create an account" do
+
+        it "count should increase by one"    do
+            user = create(:user, role: "admin")
+            new_user = build(:user)
+
+            log_in(user)
+            expect(page).to have_content 'Logged in!'
+            click_on "Roles"
+            expect(page).to have_content 'Listing Users'
+            click_link "New User"
+            expect(page).to have_content 'First name'
+            
+            fill_in "First name", with: new_user.first_name
+            fill_in "Last name", with: new_user.last_name
+            fill_in "Email", with: new_user.email
+            fill_in "Password", with: new_user.password
+            fill_in "Password confirmation", with: new_user.password_confirmation
+            click_button "Create User"
+            ## Get this working
+            #expect{}.to change(User, :count).by(1)
+            expect(page).to have_content 'Profile page for ADMINROLE'
+            expect(page).to have_content new_user.first_name
+        end
+
+    end
+
+    describe "Puser cannot create an account" do
+
+        it "count should not increase by one"    do
+            user = create(:user, role: "puser")
+            new_user = build(:user)
+
+            log_in(user)
+            expect(page).to have_content 'Logged in!'
+            click_on "Users"
+            expect(page).to have_content 'Listing Users'
+            expect(page).not_to have_content "New User"
+            visit new_adminrole_path
+            expect(page).to have_content 'Access denied.'
+
+        end
+
+    end
+
+    describe "Nuser cannot create an account" do
+
+        it "count should not increase by one"    do
+            user = create(:user, role: "nuser")
+            new_user = build(:user)
+
+            log_in(user)
+            expect(page).to have_content 'Logged in!'
+            expect(page).not_to have_content "Users"
+            visit new_adminrole_path
+            expect(page).to have_content 'Access denied.'  
+            
+        end
+
+    end
+
+    # Testing links available
+
+    describe "Nuser cannot create an account" do
+
+        it "count should not increase by one"    do
+            user = create(:user, role: "nuser")
+            new_user = build(:user)
+
+            log_in(user)
+            expect(page).to have_content 'Logged in!'
+            expect(page).not_to have_content "Users"
+            visit new_adminrole_path
+            expect(page).to have_content 'Access denied.'  
+            
+        end
+
+    end
+
+ end
+```
+
+## Added session timeout (in config/session_store.rb)
+Rails.application.config.session_store :cookie_store, key: '_std_session', :expire_after => 20.minutes
+
+## Adding pundit gem and bundling
+gem 'pundit', '~> 1.1'
+rails g pundit:install
+
+./policies/user_policy.rb 
+```
+class UserPolicy
+  attr_reader :current_user, :model
+
+  def initialize(current_user, model)
+    @current_user = current_user
+    @user = model
+  end
+
+  # Methods for each controller action
+
+  def index?
+    # Is the current user an admin? If they are they can visit index page, if not 
+    # they get failure notice that is setup in the application controller
+    @current_user.admin? || @current_user.puser?
+  end
+
+  def edit?
+    #@current_user.admin? || @current_user.puser? || 
+    @current_user.id == @user.id || @current_user.admin?
+  end
+
+  def show?
+    # If the user is an admin is allowed to show a users page or the current user is viewing his own user page
+    #@current_user.admin? || @current_user.puser? || 
+    @current_user.id == @user.id || @current_user.admin?
+  end
+
+  def update?
+    @current_user.id == @user.id || @current_user.admin?
+  end
+
+  def destroy?
+    @current_user.admin?
+  end
+
+  def new?
+    @current_user.admin?
+  end
+
+  def create?
+    @current_user.admin?
+  end
+
+end
+
+```
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-## Festure specs (posts and users)
-Feature Specs are high-level tests that work through your application ensuring that every component works. They are usually written from the perspective of a user.
-
-Our application has and needs to be tested thus far for:
-1. login for valid users
-2. no login for invalid users
-3. If you are a loged in user you can edit your profile
-4. if logged in you cannot see other peoples profiles
-5. if logged in you cannot edit other peoples profiles
-2. If not logged in you cannot visit/see posts 
-3. If logged in you can only delete your own posts 
-4. If logged in you cannot delete other peoples posts 
-5. 
-6. 
-
-> rails g integration_test post 
-> rails g integration_test user 
-
-
-
-
-
-
-
+NEED TO FINISH THE TESTS and finalize
+For now need to continue.
 
 
 

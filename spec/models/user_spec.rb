@@ -9,7 +9,7 @@
 #  password_digest :string
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
-#  admin           :boolean
+#  role            :integer          default("0"), not null
 #
 
 require 'rails_helper'
@@ -31,7 +31,7 @@ RSpec.describe User, type: :model do
   it { should respond_to(:password) }
   it { should respond_to(:password_confirmation) }
   it { should be_valid }
-  it { should respond_to(:admin) }
+  it { should respond_to(:role) }
   it { should respond_to(:authenticate) }
   it { should_not be_admin }
 

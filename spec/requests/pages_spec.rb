@@ -10,10 +10,4 @@ describe "Static pages", :type => :feature do
     it { should have_no_link('Log out') }
   end
 
-
-  describe "Other static pages", :type => :feature do
-
-    end
-
-
-  end
+end

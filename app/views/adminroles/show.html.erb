@@ -1,0 +1,23 @@
+<h1>Profile page for ADMINROLE</h1>
+
+<p>
+  <strong>Role:</strong>
+  <%= @user.role %>
+</p>
+<p>
+  <strong>First name:</strong>
+  <%= @user.first_name %>
+</p>
+
+<p>
+  <strong>Last name:</strong>
+  <%= @user.last_name %>
+</p>
+
+<p>
+  <strong>Email:</strong>
+  <%= @user.email %>
+</p>
+
+<%= link_to 'Edit', edit_adminrole_path(@user) %> |
+<%= link_to 'Back', adminroles_path %>

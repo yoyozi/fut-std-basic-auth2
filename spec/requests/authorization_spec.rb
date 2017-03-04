@@ -2,88 +2,130 @@ require 'rails_helper'
 
 describe "Authorization:" do
 
-    describe "users logged in" do
+    # Not logged in can see landing but not indexes posts and users
+    # /
+
+    describe "NOT logged in" do
+
+        it 'can see landing page' do 
+        visit root_url
+                expect(page).to have_content 'Log In'
+    
+        end
+
+    end
+
+    # Posts
+
+    describe "NOT logged in" do
+
+        it 'cannot see posts index' do 
+        visit posts_path
+                expect(page).to have_content 'Log in required.'
+    
+        end
+
+    end
+
+    # Users
+
+    describe "NOT logged in" do
 
         it 'cannot see users index' do 
-            user = FactoryGirl.create(:user)
+        visit users_path
+                expect(page).to have_content 'Log in required.'
+    
+        end
 
-            visit root_url
-            click_on "Log In"
-            fill_in 'Email', with:  user.email
-            fill_in 'Password', with: user.password
-            click_button "Submit"
+    end
+
+    # Logged in 
+    # Admin and pusers can see users index but not nusers
+    # Users
+
+
+    describe "ONLY Admin users logged in" do
+
+        it 'can see Users index (Users)' do 
+            user = create(:user, role: "admin")
+            log_in(user)
             expect(page).to have_content 'Logged in!'
             visit users_path
-            expect(page).to have_content 'Not authorized!'
+            expect(page).to have_content 'Listing Users'
 
         end
 
     end
 
-    describe "users logged in " do
+    describe "Pusers logged in" do
 
-        it 'can edit there own profile' do 
-            user = FactoryGirl.create(:user)
+        it 'can see users index' do 
+            user = create(:user, role: "puser")
+            log_in(user)
+            expect(page).to have_content 'Logged in!'
+            visit users_path
+            expect(page).to have_content 'Listing Users'
 
-            visit root_url
-            click_on "Log In"
-            fill_in 'Email', with:  user.email
-            fill_in 'Password', with: user.password
-            click_button "Submit"
+        end
+
+    end
+
+    describe "Nusers logged in" do
+
+        it 'cannot see users index' do 
+            user = create(:user, role: "nuser")
+            log_in(user)
+            expect(page).to have_content 'Logged in!'
+            visit users_path
+            expect(page).to have_content 'Access denied.'
+
+        end
+
+    end
+
+    # Logged in 
+    # All can see own profile
+
+    describe "Admin users logged in" do
+
+        it 'can see and edit there own profile' do 
+            user = create(:user, role: "admin")
+            log_in(user)
             expect(page).to have_content 'Logged in!'
             click_on user
+            expect(page).to have_content 'Profile page'
+            click_on "Edit"
+            expect(page).to have_content 'Editing User'
+
+
+        end
+
+    end
+
+    describe "Pusers logged in" do
+
+        it 'can see and edit there own profile' do  
+            user = create(:user, role: "puser")
+            log_in(user)
+            expect(page).to have_content 'Logged in!'
+            click_on user
+            expect(page).to have_content 'Profile page'
+            click_on "Edit"
             expect(page).to have_content 'Editing User'
 
         end
 
     end
 
-    describe "users logged in " do
+    describe "Nusers logged in" do
 
-        it 'can ONLY edit there own profile' do 
-            user = FactoryGirl.create(:user)
-            otheruser = FactoryGirl.create(:user)
-
-            visit root_url
-            click_on "Log In"
-            fill_in 'Email', with:  user.email
-            fill_in 'Password', with: user.password
-            click_button "Submit"
+        it 'can see and edit there own profile' do  
+            user = create(:user, role: "nuser")
+            log_in(user)
             expect(page).to have_content 'Logged in!'
-            visit edit_user_path(otheruser)
-            expect(page).to have_content 'Not authorized!'
-
-        end
-
-    end
-
-    describe "users NOT logged in " do
-
-        it 'cannot see a profile' do 
-            user = FactoryGirl.create(:user)
-            otheruser = FactoryGirl.create(:user)
-
-            visit root_url
-            visit edit_user_path(otheruser)
-            expect(page).to have_content 'Not authorized!'
-
-        end
-
-    end
-
-    describe "Admin users logged in " do
-
-        it 'can edit any profile' do 
-            user = FactoryGirl.create(:admin)
-            otheruser = FactoryGirl.create(:user)
-
-            visit root_url
-            click_on "Log In"
-            fill_in 'Email', with:  user.email
-            fill_in 'Password', with: user.password
-            click_button "Submit"
-            expect(page).to have_content 'Logged in!'
-            visit edit_user_path(otheruser)
+            click_on user
+            expect(page).to have_content 'Profile page'
+            click_on "Edit"
             expect(page).to have_content 'Editing User'
 
         end
@@ -91,151 +133,132 @@ describe "Authorization:" do
     end
 
 
-end
-#
-#    it 'Disallows blank entries to login' do 
-#        user = FactoryGirl.create(:user)
-#
-#        visit root_url
-#        click_on "Log In"
-#        fill_in 'Email', with:  ' '
-#        fill_in 'Password', with: ' '
-#        click_button "Submit"
-#        expect(page).to have_content 'Log In'
-#    end
-#
-#     it 'Disallows valid email but invalid password users to login' do 
-#        user = FactoryGirl.create(:user)
-#
-#        visit root_url
-#        click_on "Log In"
-#        fill_in 'Email', with:  user.email
-#        fill_in 'Password', with: 'invalidpassword'
-#        click_button "Submit"
-#        expect(page).to have_content 'Invalid'
-#    end
-#
-#     it 'Disallows valid email but invalid password users to login' do 
-#        user = FactoryGirl.create(:user)
-#
-#        visit root_url
-#        click_on "Log In"
-#        fill_in 'Email', with:  user.email
-#        fill_in 'Password', with: 'invalidpassword'
-#        click_button "Submit"
-#        expect(page).to have_content('Invalid') 
-#    end
-#
-#     it 'Disallows invalid email but valid password users to login' do  
-#        user = FactoryGirl.create(:user)
-#        
-#        visit root_url
-#        click_on "Log In"
-#        fill_in 'Password', with: user.password
-#        fill_in 'Email', with:  'aninvalid@email.com'
-#        click_button "Submit"
-#        expect(page).to have_content('Invalid')
-#    end
-#
-#     it 'Disallows invalid email but valid password users to login' do  
-#        user = FactoryGirl.create(:user)
-#        
-#        visit root_url
-#        click_on "Log In"
-#        fill_in 'Password', with: user.password
-#        fill_in 'Email', with:  'aninvalid@email.com'
-#        click_button "Submit"
-#        expect(page).to have_content 'Invalid'
-#    end
-#
-#    it 'Allows registered users to login and logout' do 
-#        user = FactoryGirl.create(:user)
-#
-#        visit root_url
-#        click_on "Log In"
-#        fill_in 'Email', with:  user.email
-#        fill_in 'Password', with: user.password
-#        click_button "Submit"
-#        click_link "Log Out"
-#        expect(page).to have_content 'Log In'
-#    end
-#
-#    it 'Allows registered users to login and logout' do 
-#        user = FactoryGirl.create(:user)
-#
-#        visit root_url
-#        click_on "Log In"
-#        fill_in 'Email', with:  user.email
-#        fill_in 'Password', with: user.password
-#        click_button "Submit"
-#        click_link "Log Out"
-#        expect(page).to have_content 'Logged out!'
-#    end
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#require 'rails_helper'
-#
-#RSpec.describe "AuthorizationHelper" do
-#
-#    describe "as non-admin user" do
-#        #admin = FactoryGirl.create(:admin)
-#        user = FactoryGirl.create(:user)
-#        log_in user
-#
-#        it "submitting a DELETE request to the Users#destroy action" do
-#            delete user_path(admin)
-#
-#            #specify{ response.should redirect_to(root_path) }
-#            #specify{ response.should_not be_success }
-#        end
-#    end
-#
-#    
-#
-#    it 'disallows users that are not logged in to edit profile' do 
-#     	user = FactoryGirl.create(:user)
-#
-# 		visit edit_user_path(user)
-# 		expect(page).to have_content ('Not authorized!')
-#
-#	end
-#
-#    #it 'allows users that are logged in to edit profile' do 
-#    # 	user = FactoryGirl.create(:user)
-#    #  	log_in user
-# 	#	visit edit_user_path(user)
-##
-# 	#	fill_in "First name",             with: "wnew_firstname"
-# 	#	fill_in "Last name",             with: "wnew_lastname"
-#    #    fill_in "Email",            with: "new@emwail.com"
-#    #    fill_in "Password",         with: "uswer.password"
-#    #    fill_in "Password confirmation", with: "uswer.password"
-# 	#	click_button "Update User"
-# 	#	expect(page).to have_content 'wnew_firstname'
-##
-#	#end
-#
-#	#it 'disallows users that are logged in to edit other users profile' do 
-#   # 	user = FactoryGirl.create(:user)
-#   # 	log_in user
-#   # 	otheruser = FactoryGirl.create(:user)
-# 	#	visit edit_user_path(otheruser)
-# 	#	expect(page).to have_content ('Not authorized!')
-##
-#	#end
-#
-# 
-#
-#end
-#
-#
-#
+    # Logged in 
+    # Admin can edit all profiles rest cannot edit other profiles
+
+    describe "Admin users logged in" do
+
+        it 'can edit all others profile' do 
+            user = create(:user, role: "admin")
+            other_user = create(:user, role: "admin")
+            log_in(user)
+            expect(page).to have_content 'Logged in!'
+            visit edit_user_path(other_user)
+            expect(page).to have_content 'Editing User'
+
+        end
+
+    end
+
+    describe "Pusers logged in" do
+
+        it 'can edit other profile'      do 
+            user = create(:user, role: "puser")
+            other_user = create(:user)
+            log_in(user)
+            expect(page).to have_content 'Logged in!'
+            visit edit_user_path(other_user)
+            expect(page).to have_content 'Editing User'
+
+        end
+
+    end
+
+    describe "Nusers logged in" do
+
+        it 'cannot edit other profile'      do 
+            user = create(:user, role: "nuser")
+            other_user = create(:user)
+            log_in(user)
+            expect(page).to have_content 'Logged in!'
+            visit edit_user_path(other_user)
+            expect(page).to have_content 'Access denied.'
+
+        end
+
+    end
+
+    # Logged in 
+    # Admin user can create an account only in adminrole Controller
+    # Puser cannot and normal user cannot
+
+    describe "Admin can create an account" do
+
+        it "count should increase by one"    do
+            user = create(:user, role: "admin")
+            new_user = build(:user)
+
+            log_in(user)
+            expect(page).to have_content 'Logged in!'
+            click_on "Roles"
+            expect(page).to have_content 'Listing Users'
+            click_link "New User"
+            expect(page).to have_content 'First name'
+            
+            fill_in "First name", with: new_user.first_name
+            fill_in "Last name", with: new_user.last_name
+            fill_in "Email", with: new_user.email
+            fill_in "Password", with: new_user.password
+            fill_in "Password confirmation", with: new_user.password_confirmation
+            click_button "Create User"
+            ## Get this working
+            #expect{}.to change(User, :count).by(1)
+            expect(page).to have_content 'Profile page for ADMINROLE'
+            expect(page).to have_content new_user.first_name
+        end
+
+    end
+
+    describe "Puser cannot create an account" do
+
+        it "count should not increase by one"    do
+            user = create(:user, role: "puser")
+            new_user = build(:user)
+
+            log_in(user)
+            expect(page).to have_content 'Logged in!'
+            click_on "Users"
+            expect(page).to have_content 'Listing Users'
+            expect(page).not_to have_content "New User"
+            visit new_adminrole_path
+            expect(page).to have_content 'Access denied.'
+
+        end
+
+    end
+
+    describe "Nuser cannot create an account" do
+
+        it "count should not increase by one"    do
+            user = create(:user, role: "nuser")
+            new_user = build(:user)
+
+            log_in(user)
+            expect(page).to have_content 'Logged in!'
+            expect(page).not_to have_content "Users"
+            visit new_adminrole_path
+            expect(page).to have_content 'Access denied.'  
+            
+        end
+
+    end
+
+    # Testing links available
+
+    describe "Nuser cannot create an account" do
+
+        it "count should not increase by one"    do
+            user = create(:user, role: "nuser")
+            new_user = build(:user)
+
+            log_in(user)
+            expect(page).to have_content 'Logged in!'
+            expect(page).not_to have_content "Users"
+            visit new_adminrole_path
+            expect(page).to have_content 'Access denied.'  
+            
+        end
+
+    end
+
+ end

@@ -1,0 +1,19 @@
+<%= form_for @user, :url => url_for(:controller => 'adminroles', :action => 'update'), :method => "patch", :html => { :class => 'form-horizontal' } do |f| %>
+
+
+  <div class="field">
+    <%= f.label :email %><br>
+    <%= f.text_field :email %>
+  </div>
+
+  <div class="field">
+    <%= f.select(:role, User.roles.keys.map {|role| [role.titleize,role]})  %>
+  </div>
+ 
+
+
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+
+<% end %>

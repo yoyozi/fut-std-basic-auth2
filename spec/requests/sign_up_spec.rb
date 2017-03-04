@@ -120,36 +120,5 @@ end
 #
 #	let(:submit) { "Create my account" }
 #
-#  describe "sign in with invalid information" do
-#
-#    it "should not create a user" do
-#
-#      expect { click_button "Create User" }.not_to change(User, :count)
-#      # to do test error messages being thrown
-#
-#    end
-#
-#  end
-#
-#  describe "sign in with valid information" do
-#
-#    before do
-#
-#      fill_in "First name",         with: "Example User"
-#      fill_in "Last name",         with: "Example User surname"
-#      fill_in "Email",        with: "user@example.com"
-#      fill_in "Password",     with: "foobar"
-#      fill_in "Password confirmation", with: "foobar"
-#
-#    end
-#
-#    it "should create a user" do
-#
-#       		expect { click_button "Create User" }.to change(User, :count).by(1)
-#
-#    end
-#
-#  end
-#
-#end
+
 #

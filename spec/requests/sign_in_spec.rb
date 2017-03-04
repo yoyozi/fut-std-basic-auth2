@@ -109,28 +109,4 @@ describe "SignInProcess", :type => :feature do
  		expect(page).to have_content 'Logged out!'
  	end
 
-
-#
-#	it 'user cannot sign in if not registered' do 	
-#		login('person@example.com', 'password')
-#		expect(page).to have_content 'Invalid Email or password'
-#	end	
-#
-#	it 'user can sign in with valid credentialls' do 
-#		user = FactoryGirl.create(:user)
-#		login(user.email, user.password)
-#		expect(page).to have_content 'Signed in successfully'
-#	end
-#
-#	it 'user can sign in with invalid email' do 
-#		user = FactoryGirl.create(:user)
-#		login('invalid@email.com', user.password)
-#		expect(page).to have_content 'Invalid Email or password'
-#	end
-#
-#	it 'user can sign in with invalid password' do 
-#		user = FactoryGirl.create(:user)
-#		login(user.email, 'invalidpassword')
-#		expect(page).to have_content 'Invalid Email or password'
-#	end
 end

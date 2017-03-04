@@ -27,17 +27,21 @@
 
 Rails.application.routes.draw do
 
-  resources :posts
-  resources :sessions, only: [:new, :create, :destroy]
+  	resources :posts
+  	
+  	resources :sessions, only: [:new, :create, :destroy]
 
+	get "view" => "adminroles#show"
+	get "edit" => "adminroles#edit"
+	patch "update" => "adminroles#update"
 
-  get 'signup', to: 'users#new', as: 'signup'
-  get 'login', to: 'sessions#new', as: 'login'
-  get 'logout', to: 'sessions#destroy', as: 'logout'
+  	get 'signup', to: 'users#new', as: 'signup'
+  	get 'login', to: 'sessions#new', as: 'login'
+  	get 'logout', to: 'sessions#destroy', as: 'logout'
 
-  resources :users
+  	resources :users
+  	resources :adminroles
 
-
-  root 'pages#index'
+  	root 'pages#index'
 
 end

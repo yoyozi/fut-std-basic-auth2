@@ -2,7 +2,7 @@ class PostsController < ApplicationController
 
   before_action :set_post, only: [:show, :edit, :update, :destroy]
 
-  before_action :authorize, except: [:show, :index]
+  before_action :isloggedin
 
   # GET /posts
   def index
@@ -59,15 +59,10 @@ end
     end
 
 
-  # The method to ensure that a user is logged in else cannot use the actions listed in  before action above
-  def authorize
-    if current_user.nil?
-      redirect_to login_url, alert: "Not authorized! Please log in to post."
-    else
-      # If the post is not belonging to the logged in user then redirect to root url and send flash alert.
-      if @post && @post.user != current_user
-        redirect_to root_path, alert: "Not authorized! Only #{@post.user} has access to this post."
+    def isloggedin
+
+      if current_user.nil?
+        redirect_to login_url, alert: "Log in required."
       end
     end
-  end
 end
